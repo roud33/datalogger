@@ -1,7 +1,7 @@
 # datalogger
 
 The main purpose of this datalogging project is to characterize Heavy Equipment Operations with data analysis.
-The datalogger need to gather data from multiple sources. 
+The datalogger needs to gather data from multiple sources. 
 
 This version is designed to work with :
 - UBLOX NEO M8N - https://www.u-blox.com/en/product/neo-m8-series - EXTERNAL
