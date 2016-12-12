@@ -12,4 +12,5 @@ This version is designed to work with :
 An external OLED display 0.96'' will be used to display data.
 An SD recorder attached to the SPI bus will record data.
 
+Data will be printed as TXT/CSV file
 
