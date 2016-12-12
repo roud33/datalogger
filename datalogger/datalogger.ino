@@ -76,8 +76,10 @@ unsigned long previousMillis2 = 0;        // will store last time LED was update
 long time2 = 250;           // milliseconds of on-time
 
 //SD
-unsigned long previousMillis3 = 10000;        // will store last time LED was updated
+unsigned long previousMillis3 = 0;        // will store last time LED was updated
 long time3 = 500;           // milliseconds of on-time
+
+bool start = false;
 
 //MPU6050
 unsigned long previousMillis4 = 0;        // will store last time LED was updated
@@ -144,6 +146,9 @@ void setup()
   }
 
   //Serial.println("card initialized.");
+  SeeedOled.setTextXY(1, 0);         //Set the cursor to Xth Page, Yth Column
+  SeeedOled.putString("card initialized"); //Print the String
+
   //char filename[16]; // make it long enough to hold your longest file name, plus a null terminator
   int n = 0;
   snprintf(filename, sizeof(filename), "data%03d.txt", n); // includes a three-digit sequence number in the file name
@@ -154,24 +159,29 @@ void setup()
   File dataFile = SD.open(filename, FILE_WRITE);
 
   dataFile.println("millis,time,sat,lat,long,alt,heading,spd,ax_bi,ay_bi,az_bi,gx_bi,gy_bi,gz_bi,dist");
-  
+
   //Serial.println(n);
   //Serial.println(filename);
+
+
   dataFile.close();
   //now filename[] contains the name of a file that doesn't exist
 
+  SeeedOled.setTextXY(2, 0);         //Set the cursor to Xth Page, Yth Column
+  SeeedOled.putString("All test done... READY !"); //Print the String
 
-
-// *****************************************
-// *************-- LOOP --******************
-// *****************************************
-// *****************************************
+  // *****************************************
+  // *************-- LOOP --******************
+  // *****************************************
+  // *****************************************
 
   //GPS
   Serial1.begin(9600);
-  
-    SeeedOled.clearDisplay();          //clear the screen and set start position to top left corner
-  
+
+  SeeedOled.clearDisplay();          //clear the screen and set start position to top left corner
+  SeeedOled.setTextXY(0, 0);         //Set the cursor to Xth Page, Yth Column
+  SeeedOled.putString("Wait 4 sat > 5"); //Print the String
+
 }
 
 void loop()
@@ -182,7 +192,14 @@ void loop()
 
   readNMEA();
 
-  if (currentMillis - previousMillis1 >= time1)
+  //Serial.print(start);
+
+  if ((gps.satellites.value() > 5) && (start == false)) {
+    start = true;
+    SeeedOled.clearDisplay();
+  }
+
+  if (currentMillis - previousMillis1 >= time1 && (start == true))
   {
     oled();
     previousMillis1 = currentMillis;  // Remember the time
@@ -196,7 +213,7 @@ void loop()
 
   }
 
-  if (currentMillis - previousMillis3 >= time3)
+  if ((currentMillis - previousMillis3 >= time3) && (start == true) )
   {
     serial_data();
     previousMillis3 = currentMillis;  // Remember the time
@@ -228,34 +245,48 @@ static void oled() {
 
   String logOledString2;
   logOledString2 += "Sat visible :";
-  logOledString2 += GPSsat;
+  logOledString2 += printInt(gps.satellites.value(), gps.satellites.isValid(), 5);
 
     String logOledString3;
-  logOledString3 += "Ultrasound :";
-  logOledString3 += dist;
+  if ((dist >= 0) && (dist < 10))  {
+  logOledString3 += "Ultrasound :00";
+  }
+  else if ((dist >= 10) && (dist < 100))  {
+    logOledString3 += "Ultrasound :0";
+  }
 
-  int str_len1 = logOledString1.length() + 1; 
+  else if (dist >= 100) {
+    logOledString3 += "Ultrasound :";
+  }
+  
+
+  
+  logOledString3 += String(dist);
+
+  int str_len1 = logOledString1.length() + 1;
   char char_array1[str_len1];
   logOledString1.toCharArray(char_array1, str_len1);
 
-    int str_len2 = logOledString2.length() + 1; 
+  int str_len2 = logOledString2.length() + 1;
   char char_array2[str_len2];
   logOledString2.toCharArray(char_array2, str_len2);
 
-     int str_len3 = logOledString3.length() + 1; 
+
+
+  int str_len3 = logOledString3.length() + 1;
   char char_array3[str_len3];
   logOledString3.toCharArray(char_array3, str_len3);
-  
+
 
   SeeedOled.setTextXY(0, 0);         //Set the cursor to Xth Page, Yth Column
   SeeedOled.putString(char_array1); //Print the String
-  
+
   SeeedOled.setTextXY(1, 0);         //Set the cursor to Xth Page, Yth Column
   SeeedOled.putString(char_array2); //Print the String
 
-    SeeedOled.setTextXY(2, 0);         //Set the cursor to Xth Page, Yth Column
+  SeeedOled.setTextXY(2, 0);         //Set the cursor to Xth Page, Yth Column
   SeeedOled.putString(char_array3); //Print the String
-  
+
 
 }
 
